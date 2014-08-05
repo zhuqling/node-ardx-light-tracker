@@ -1,0 +1,8 @@
+{
+  "name": "node-ardx-light-tracker",
+  "dependencies": {
+    "cli-table": "^0.3.0",
+    "colors": "^0.6.2",
+    "johnny-five": "^0.8.2"
+  }
+}
