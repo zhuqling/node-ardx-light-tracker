@@ -6,17 +6,17 @@ var Photoresistor = require('./helper/Photoresistor'),
 
 board.on("ready", function() {
 
-	// 2 servos (vertical and horizontal)
-	var servoVertical = new five.Servo(9),
-		servoHorizontal = new five.Servo(10);
+	// 2 servos (tilt and pan)
+	var tilt = new five.Servo(9),
+		pan = new five.Servo(10);
 
 	board.repl.inject({
-		servoVertical: servoVertical,
-		servoHorizontal: servoHorizontal
+		tilt: tilt,
+		pan: pan
 	});
 
-	servoVertical.center();
-	servoHorizontal.center();
+	tilt.center();
+	pan.center();
 
 	// 4 photoresitors (one per analog pin)
 	// Physically arranged as per below:
@@ -29,23 +29,30 @@ board.on("ready", function() {
 		return new Photoresistor(pin);
 	});
 
-	setInterval(function() {
-		var values = resistors.map(function(resistor) {
-			return Math.round(resistor.brightness);
-		});
+	//
+	var lightTracker = new LightTracker(),
+		panMinValue = 20;
 
-		// TODO: Update code so `lightTracker` can be instanciated outside this function
-		var lightTracker = new LightTracker(values),
-			directions = lightTracker.getDirections();
+	setTimeout(function() {
+		setInterval(function() {
+			var values = resistors.map(function(resistor) {
+				return Math.round(resistor.brightness);
+			});
 
-		// TODO: Use object properties instead of array (be descriptive)
-		servoHorizontal.step(directions[0]);
-		servoVertical.step(directions[1]);
+			var offset = lightTracker.setValues(values).getOffset(),
+				tiltOffset = offset.tilt,
+				panOffset = -offset.pan;
 
-		console.log(lightTracker.toString());
-		console.log('[directions] h, v', lightTracker.getDirections());
-		console.log('[vertical servo] current value', servoVertical.value);
-		console.log('[horizontal servo] current value', servoHorizontal.value);
-	}, 250);
+			tilt.step(offset.tilt);
+
+			if (!(panOffset == -1 && pan.value == panMinValue)) {
+				pan.step(-offset.pan);
+			}
+
+			console.log(lightTracker.toString());
+			console.log('[tilt] value', tilt.value, 'offset', offset.tilt);
+			console.log('[pan] value', pan.value, 'offset', -offset.pan);
+		}, 25)
+	}, 1000);
 
 });

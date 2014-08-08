@@ -1,3 +1,5 @@
+var five = require('johnny-five');
+
 'use strict';
 
 module.exports = function(pin) {
@@ -5,7 +7,7 @@ module.exports = function(pin) {
 
 	this.sensor = new five.Sensor({
 		pin: pin,
-		freq: 250
+		freq: 50
 	});
 
 	this._dataHandler = function(err, value) {
